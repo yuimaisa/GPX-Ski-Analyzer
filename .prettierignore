@@ -8,3 +8,5 @@ public/samples/*.gpx
 next-env.d.ts
 
 public/analysis-worker.js
+
+.wrangler

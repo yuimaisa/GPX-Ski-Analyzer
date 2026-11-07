@@ -19,3 +19,5 @@ jobs:
       - run: npm run format:check
       - run: npm test
       - run: npm run build
+      - name: Validate Cloudflare static deployment
+        run: npm run deploy -- --dry-run

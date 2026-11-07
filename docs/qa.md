@@ -11,7 +11,7 @@
 - Next.js本番ビルド成功。ルート配信と `/GPX-Ski-Analyzer` サブパス配信をビルドし、アセット・Worker・サンプルのパスを確認。
 - 開発サーバーを一時起動。HTML、Worker JS、サンプルGPXのHTTP 200とContent-Typeを確認し、終了。
 - ソース内から指定された宣伝調の文言がなくなったことを検索で確認。
-- Sitesへの非公開デプロイ成功。GitHubのoriginにはpushしていない。
+- Sitesへの非公開デプロイ成功。
 
 ## 修正した問題
 
@@ -45,3 +45,19 @@
 | 情報量         | 宣伝文と重複説明を削除。時刻は秒・JSTを明示、必要な全統計を追加                | 未実施           |
 
 生成画像はUIに埋め込んでいない。スクリーンショットは合成データで `docs/screenshots/` に掲載する想定。画面を取得できていないため、実装との忠実度やVisual QA完了は主張しない。
+
+## Cloudflare Workersのデプロイ設定
+
+- 提供ログでは `next build` は成功。Wranglerの自動OpenNext移行が静的出力に対してstandalone用の `pages-manifest.json` を探して失敗していた。
+- `wrangler.jsonc` で `assets.directory: ./out` と404ページの扱いを明示。OpenNextへの自動移行を避け、静的出力を直接配信する。
+- Wrangler 4.158.0を固定し、CIに `npm run deploy -- --dry-run` を追加。
+- 型チェック、Lint、整形、25件のテスト、本番ビルドが成功。
+- Wrangler dry run成功：`out/` の37ファイルを認識し、OpenNextの移行・再ビルドは実行されない。
+- `wrangler dev --local` でHTML、解析Worker、Next.jsのJS、サンプルGPXのHTTP 200を確認。存在しないJSへのアクセスはHTTP 404。
+- Cloudflare本番への公開は未実施。Git連携の対象ブランチへマージして再デプロイする。
+
+### ブランチプレビュー
+
+- `wrangler preview` に必要な `previews: {}` を追加。`npm run deploy:preview` からも実行可能。
+- Wrangler 4.158.0の設定パーサーを本番・プレビューモードで実行し、設定の妥当性と `out/`・404設定の継承を確認。本番のdry runも成功。
+- `wrangler preview` はdry run非対応のため、Cloudflareへのリモートプレビュー作成は未検証。

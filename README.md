@@ -35,7 +35,7 @@ npm run format:check
 npm run build
 ```
 
-`npm run format` で整形。`npm run test:watch` で監視。CIは型・Lint・整形・テスト・ビルドを実行します。本番出力は静的ファイルの `out/`。`output: 'export'` のため `next start` は使用せず、任意の静的HTTPサーバーで `out/` を配信してください。
+`npm run format` で整形。`npm run test:watch` で監視。CIは型・Lint・整形・テスト・ビルドとCloudflareデプロイ設定のdry runを実行します。本番出力は静的ファイルの `out/`。`output: 'export'` のため `next start` は使用せず、任意の静的HTTPサーバーで `out/` を配信してください。
 
 ## 技術構成
 
@@ -69,6 +69,35 @@ GPXと解析値はメモリ内だけで保持され、再読み込みで消え�
 
 ## デプロイ
 
+### Cloudflare Workers
+
+WorkersのGit連携では次を設定します。
+
+| 項目                         | 値                                                     |
+| ---------------------------- | ------------------------------------------------------ |
+| ビルドコマンド               | `npm run build`                                        |
+| 本番のデプロイコマンド       | `npx wrangler deploy` または `npm run deploy`          |
+| プレビューのデプロイコマンド | `npx wrangler preview` または `npm run deploy:preview` |
+| ルートディレクトリ           | リポジトリのルート                                     |
+| 本番ブランチ                 | `main`                                                 |
+
+ブランチプレビューは `wrangler.jsonc` の `previews: {}` で有効化します。静的アセットと互換設定はトップレベルから継承します。
+
+`wrangler.jsonc` が `out/` を静的アセットとして配信します。`NEXT_PUBLIC_BASE_PATH` は未設定または空にしてください。Next.jsのサーバー機能は使用しないため、OpenNextアダプターは不要です。
+
+ローカルでデプロイ前の検証を行う場合：
+
+```sh
+npm run build
+npm run deploy -- --dry-run
+```
+
+Cloudflareにログイン済みの環境では `npm run deploy` で公開できます。静的ファイルの生成先は `.next/` ではなく `out/` です。
+
+`pages-manifest.json` が見つからないOpenNextのエラーが出る場合は、この設定を含むコミットがデプロイ対象か確認してください。自動移行で追加された `@opennextjs/cloudflare`、`open-next.config.ts`、`next.config.ts` のOpenNext初期化がある場合は取り除き、元の `output: 'export'` 設定を使用してください。ビルドキャッシュに自動移行の変更が残る場合は、Cloudflareのキャッシュをクリアして再実行します。
+
+### GitHub Pages
+
 GitHubリポジトリの **Settings → Pages → Source: GitHub Actions** を選択し、Actionsの **Deploy GitHub Pages** を手動実行します。リポジトリ名を `NEXT_PUBLIC_BASE_PATH` に設定してビルドし、`out/` を配信します。
 
 ルートドメイン／独自ドメインに配信する場合は `NEXT_PUBLIC_BASE_PATH` を空にして `npm run build`。サブパスに配信する場合は、例として次を実行します。
@@ -77,7 +106,7 @@ GitHubリポジトリの **Settings → Pages → Source: GitHub Actions** を�
 NEXT_PUBLIC_BASE_PATH=/GPX-Ski-Analyzer npm run build
 ```
 
-生成された `out/` を静的ホストへ配置してください。`basePath` はビルド時に埋め込まれるため、変更時は再ビルドが必要です。Workerを含む `out/_next/` もすべて配信してください。
+生成された `out/` を静的ホストへ配置してください。`basePath` はビルド時に埋め込まれるため、変更時は再ビルドが必要です。`analysis-worker.js`、`_next/`、`samples/` を含む `out/` 全体を配信してください。
 
 ## デザイン・画面確認
 
