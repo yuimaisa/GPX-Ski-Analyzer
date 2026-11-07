@@ -153,10 +153,12 @@ export function Analyzer() {
             <span>GPX Ski Analyzer</span>
           </a>
           <div className="header-actions">
-            <a className="method-link" href={analysis ? '#analysis-method' : '#how-it-works'}>
-              <Info size={17} />
-              解析方法
-            </a>
+            {analysis && (
+              <a className="method-link" href="#analysis-method">
+                <Info size={17} />
+                解析方法
+              </a>
+            )}
             <button className="button outline" onClick={choose} disabled={busy}>
               <FolderOpen size={18} />
               <span>GPXを選択</span>
