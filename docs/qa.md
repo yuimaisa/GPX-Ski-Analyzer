@@ -55,3 +55,9 @@
 - Wrangler dry run成功：`out/` の37ファイルを認識し、OpenNextの移行・再ビルドは実行されない。
 - `wrangler dev --local` でHTML、解析Worker、Next.jsのJS、サンプルGPXのHTTP 200を確認。存在しないJSへのアクセスはHTTP 404。
 - Cloudflare本番への公開は未実施。Git連携の対象ブランチへマージして再デプロイする。
+
+### ブランチプレビュー
+
+- `wrangler preview` に必要な `previews: {}` を追加。`npm run deploy:preview` からも実行可能。
+- Wrangler 4.158.0の設定パーサーを本番・プレビューモードで実行し、設定の妥当性と `out/`・404設定の継承を確認。本番のdry runも成功。
+- `wrangler preview` はdry run非対応のため、Cloudflareへのリモートプレビュー作成は未検証。
