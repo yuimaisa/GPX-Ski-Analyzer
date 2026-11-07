@@ -23,7 +23,7 @@ npm ci
 npm run dev
 ```
 
-[http://localhost:3000](http://localhost:3000) を開き、「サンプルで試す」またはGPXを選択します。ファイルは15MB・15万地点まで。GPXの `trk / trkseg / trkpt` を対象とし、ルート／ウェイポイントのみのGPXは対象外です。すべての時刻は日本時間（JST）で表示します。
+[http://localhost:3000](http://localhost:3000) を開き、「サンプルを読み込む」またはGPXを選択します。ファイルは15MB・15万地点まで。GPXの `trk / trkseg / trkpt` を対象とし、ルート／ウェイポイントのみのGPXは対象外です。すべての時刻は日本時間（JST）で表示します。
 
 ## 開発と検証
 

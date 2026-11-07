@@ -5,7 +5,6 @@ import {
   FolderOpen,
   MountainSnow,
   Info,
-  ShieldCheck,
   LoaderCircle,
   AlertCircle,
   FileText,
@@ -48,7 +47,7 @@ function AnalysisView({
     <>
       <section className="record-heading">
         <div>
-          <h1>滑走の記録を、読み解く。</h1>
+          <h1>解析結果</h1>
           <p className="record-name" title={filename}>
             <FileText size={16} />
             {filename}
@@ -194,7 +193,7 @@ export function Analyzer() {
         {busy && (
           <div className="loading-banner" role="status">
             <LoaderCircle className="spin" size={18} />
-            GPXを端末内で解析しています…
+            解析中…
           </div>
         )}
         {analysis ? (
@@ -204,19 +203,14 @@ export function Analyzer() {
         )}
       </main>
       <footer className="app-footer">
-        <span>
-          <ShieldCheck size={14} />
-          GPXは端末内で処理されます
-        </span>
         <a href="https://github.com/yuimaisa/GPX-Ski-Analyzer" target="_blank" rel="noreferrer">
-          オープンソース · MIT
+          ソースコード · MIT
         </a>
       </footer>
       {dragging && (
         <div className="drop-overlay">
           <FolderOpen size={48} />
           <strong>ここにGPXをドロップ</strong>
-          <span>現在の記録を読み替えます</span>
         </div>
       )}
     </div>
