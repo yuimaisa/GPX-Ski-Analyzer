@@ -1,0 +1,14 @@
+node_modules/
+.next/
+out/
+dist/
+coverage/
+*.tsbuildinfo
+.env*
+!.env.example
+.DS_Store
+*.log
+.openai/*.tar.gz
+
+public/analysis-worker.js
+public/analysis-worker.js.LEGAL.txt
