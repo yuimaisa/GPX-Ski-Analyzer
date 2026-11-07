@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "gpx-ski-analyzer",
+  "compatibility_date": "2026-11-04",
+  // Next.js output: 'export' produces a static site in out/.
+  // Declaring assets explicitly prevents Wrangler's automatic OpenNext migration.
+  "assets": {
+    "directory": "./out",
+    "not_found_handling": "404-page",
+  },
+}

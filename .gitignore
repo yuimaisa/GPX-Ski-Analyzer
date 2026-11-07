@@ -12,3 +12,6 @@ coverage/
 
 public/analysis-worker.js
 public/analysis-worker.js.LEGAL.txt
+
+.wrangler/
+.dev.vars*
