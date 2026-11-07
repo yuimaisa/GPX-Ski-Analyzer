@@ -1,0 +1,10 @@
+.next
+out
+node_modules
+coverage
+package-lock.json
+public/samples/*.gpx
+.agents
+next-env.d.ts
+
+public/analysis-worker.js
