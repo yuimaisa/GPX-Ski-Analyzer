@@ -163,20 +163,20 @@ export function TimeCharts({ analysis: a, selectedRun, selectedPoint, onPoint }:
                     }
                   }}
                 >
-                  <CartesianGrid stroke="#293641" strokeDasharray="3 4" vertical={false} />
+                  <CartesianGrid stroke="var(--border)" strokeDasharray="3 4" vertical={false} />
                   <XAxis
                     dataKey="elapsed"
                     type="number"
                     domain={['dataMin', 'dataMax']}
                     tickFormatter={(v) => number(v / 60, 0)}
-                    tick={{ fill: '#a4b2bf', fontSize: 11 }}
+                    tick={{ fill: 'var(--muted)', fontSize: 11 }}
                     tickLine={false}
-                    axisLine={{ stroke: '#35434f' }}
+                    axisLine={{ stroke: 'var(--border)' }}
                     minTickGap={28}
                   />
                   <YAxis
                     domain={kind === 'speed' ? [0, 'auto'] : ['auto', 'auto']}
-                    tick={{ fill: '#a4b2bf', fontSize: 11 }}
+                    tick={{ fill: 'var(--muted)', fontSize: 11 }}
                     tickFormatter={(v) => number(v)}
                     tickLine={false}
                     axisLine={false}
@@ -186,23 +186,23 @@ export function TimeCharts({ analysis: a, selectedRun, selectedPoint, onPoint }:
                     <ReferenceArea
                       x1={from}
                       x2={to}
-                      fill="#73e2ce"
+                      fill={STATE_COLORS.downhill}
                       fillOpacity={0.09}
-                      stroke="#73e2ce"
+                      stroke={STATE_COLORS.downhill}
                       strokeOpacity={0.3}
                     />
                   )}
                   {cursor != null && (
-                    <ReferenceLine x={cursor} stroke="#edf3f7" strokeDasharray="3 3" />
+                    <ReferenceLine x={cursor} stroke="var(--text)" strokeDasharray="3 3" />
                   )}
                   <Tooltip
                     content={<ChartTooltip />}
-                    cursor={{ stroke: '#a4b2bf', strokeDasharray: '3 3' }}
+                    cursor={{ stroke: 'var(--muted)', strokeDasharray: '3 3' }}
                   />
                   <Line
                     type="linear"
                     dataKey={kind}
-                    stroke={kind === 'speed' ? '#73e2ce' : '#a6b4ff'}
+                    stroke={kind === 'speed' ? STATE_COLORS.downhill : STATE_COLORS.uphill}
                     strokeOpacity={0.3}
                     strokeWidth={1}
                     dot={false}
@@ -218,7 +218,7 @@ export function TimeCharts({ analysis: a, selectedRun, selectedPoint, onPoint }:
                       stroke={STATE_COLORS[state]}
                       strokeWidth={2}
                       dot={false}
-                      activeDot={{ r: 4, stroke: '#edf3f7', strokeWidth: 2 }}
+                      activeDot={{ r: 4, stroke: 'var(--surface)', strokeWidth: 2 }}
                       isAnimationActive={false}
                       connectNulls={false}
                     />
