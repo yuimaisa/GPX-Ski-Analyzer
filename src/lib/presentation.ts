@@ -6,12 +6,12 @@ export const STATE_LABELS: Record<SkiState, string> = {
   unknown: '不明',
 };
 export const STATE_COLORS: Record<SkiState, string> = {
-  downhill: '#73e2ce',
-  uphill: '#a6b4ff',
-  stopped: '#f0c87a',
-  unknown: '#9ca7b2',
+  downhill: '#0f766e',
+  uphill: '#4f46e5',
+  stopped: '#9a6700',
+  unknown: '#64748b',
 };
-export const SPEED_COLORS = ['#8db9e8', '#70ddd4', '#91e09a', '#edda83', '#f3a677', '#ee7982'];
+export const SPEED_COLORS = ['#2563eb', '#0891b2', '#15803d', '#a16207', '#c2410c', '#be123c'];
 export const number = (v: number | null, digits = 0) =>
   v == null
     ? '—'

@@ -181,7 +181,12 @@ export default function TrackMap({ analysis, selectedRun, selectedPoint, onPoint
             <CircleMarker
               center={position(first)}
               radius={6}
-              pathOptions={{ color: '#fff', weight: 2, fillColor: '#73e2ce', fillOpacity: 1 }}
+              pathOptions={{
+                color: '#fff',
+                weight: 2,
+                fillColor: STATE_COLORS.downhill,
+                fillOpacity: 1,
+              }}
             >
               <Tooltip permanent direction="top">
                 開始
@@ -192,7 +197,7 @@ export default function TrackMap({ analysis, selectedRun, selectedPoint, onPoint
             <CircleMarker
               center={position(last)}
               radius={6}
-              pathOptions={{ color: '#fff', weight: 2, fillColor: '#ee7982', fillOpacity: 1 }}
+              pathOptions={{ color: '#fff', weight: 2, fillColor: '#be123c', fillOpacity: 1 }}
             >
               <Tooltip permanent direction="bottom">
                 終了
@@ -203,7 +208,12 @@ export default function TrackMap({ analysis, selectedRun, selectedPoint, onPoint
             <CircleMarker
               center={position(cursor)}
               radius={9}
-              pathOptions={{ color: '#fff', weight: 3, fillColor: '#73e2ce', fillOpacity: 1 }}
+              pathOptions={{
+                color: '#fff',
+                weight: 3,
+                fillColor: STATE_COLORS.downhill,
+                fillOpacity: 1,
+              }}
             >
               <Tooltip direction="top">選択地点</Tooltip>
             </CircleMarker>

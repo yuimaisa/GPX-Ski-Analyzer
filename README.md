@@ -10,11 +10,12 @@ GPXのスキー記録から滑走区間・距離・速度・標高を解析す�
 - Leaflet地図の状態／速度切替、開始・終了、滑走選択、範囲フィット
 - 速度・標高グラフと地図の地点連動。キーボード操作可能な地点スライダー
 - ノイズ、欠損、重複時刻、記録切断の処理と品質情報
-- 架空の合成サンプル、ダークUI、スマートフォン対応
+- 架空の合成サンプル、白基調のUI、スマートフォン対応
 
 ## 起動
 
-Node.js 22以上とnpmを使用します。
+Node.js 22.12以上とnpmを使用します。
+APIキーや環境変数の設定は不要です。
 
 ```sh
 git clone https://github.com/yuimaisa/GPX-Ski-Analyzer.git
@@ -29,13 +30,14 @@ npm run dev
 
 ```sh
 npm run typecheck
+npm audit --audit-level=moderate
 npm run lint
 npm test
 npm run format:check
 npm run build
 ```
 
-`npm run format` で整形。`npm run test:watch` で監視。CIは型・Lint・整形・テスト・ビルドとCloudflareデプロイ設定のdry runを実行します。本番出力は静的ファイルの `out/`。`output: 'export'` のため `next start` は使用せず、任意の静的HTTPサーバーで `out/` を配信してください。
+`npm run format` で整形。`npm run test:watch` で監視。CIは依存関係の脆弱性監査・型・Lint・整形・テスト・ビルドとCloudflareデプロイ設定のdry runを実行します。本番出力は静的ファイルの `out/`。`output: 'export'` のため `next start` は使用せず、任意の静的HTTPサーバーで `out/` を配信してください。
 
 ## 技術構成
 
@@ -111,6 +113,12 @@ NEXT_PUBLIC_BASE_PATH=/GPX-Ski-Analyzer npm run build
 ## デザイン・画面確認
 
 [design.md](design.md) に方針、[docs/qa.md](docs/qa.md) に検証結果を記録します。実装スクリーンショットの掲載先は `docs/screenshots/` です。合成データを使用し、個人の滑走履歴を掲載しないでください。
+
+## コントリビューション・セキュリティ
+
+不具合報告や変更提案は [Issues](https://github.com/yuimaisa/GPX-Ski-Analyzer/issues) へ。開発手順とデータの扱いは [CONTRIBUTING.md](CONTRIBUTING.md)、脆弱性の報告方法は [SECURITY.md](SECURITY.md) を参照してください。公開するGPXは同梱の合成サンプルだけです。個人の記録、認証情報、環境固有のホスティング設定はコミットしないでください。
+
+`package.json` の `private: true` はnpmへの誤公開を防ぐ設定です。GitHubリポジトリの公開範囲には影響しません。
 
 ## ライセンス
 
