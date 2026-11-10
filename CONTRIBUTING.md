@@ -23,7 +23,7 @@ npm run build
 npm run deploy -- --dry-run
 ```
 
-整形は `npm run format`。依存関係を変更した場合は `package-lock.json` も更新してください。解析ロジックを変更する場合は合成データによる回帰テストと [解析アルゴリズム](docs/algorithm.md) も更新します。UIを変更する場合はPCとスマートフォンで確認し、合成サンプルの画面を添えてください。
+整形は `npm run format`。依存関係を変更した場合は `package-lock.json` も更新し、CIと同じNode.js 22／npm 10で `npm ci` が成功することを確認してください。解析ロジックを変更する場合は合成データによる回帰テストと [解析アルゴリズム](docs/algorithm.md) も更新します。UIを変更する場合はPCとスマートフォンで確認し、合成サンプルの画面を添えてください。
 
 ## 個人情報・認証情報
 
