@@ -2,6 +2,8 @@
 
 GPXのスキー記録から滑走区間・距離・速度・標高を解析するWebアプリ。GPXはブラウザ内で処理し、送信・保存しません。
 
+https://gpx-ski-analyzer.yuishinwada.workers.dev/
+
 ## 主な機能
 
 - GPXのドラッグ＆ドロップ／ファイル選択。複数トラック・セグメントに対応
