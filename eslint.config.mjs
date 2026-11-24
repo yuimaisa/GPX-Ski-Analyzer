@@ -5,7 +5,10 @@ export default defineConfig([
   ...nextVitals,
   ...nextTs,
   globalIgnores([
+    '.agents/**',
+    '.codex/**',
     '.next/**',
+    '.worktrees/**',
     '.wrangler/**',
     'out/**',
     'coverage/**',

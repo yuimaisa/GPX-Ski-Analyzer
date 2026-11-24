@@ -26,3 +26,10 @@ public/analysis-worker.js.LEGAL.txt
 .wrangler/
 .dev.vars*
 !.dev.vars.example
+
+# Local-only AI CLI overrides, handoff scratchpads, and parallel Git worktrees
+AGENTS.override.md
+GEMINI.local.md
+.codex/*.local.toml
+.agents/handoff.local.md
+.worktrees/

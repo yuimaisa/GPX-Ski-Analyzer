@@ -5,6 +5,8 @@ coverage
 package-lock.json
 public/samples/*.gpx
 .agents
+.codex
+.worktrees
 next-env.d.ts
 
 public/analysis-worker.js
