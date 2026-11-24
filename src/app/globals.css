@@ -146,7 +146,8 @@ button {
   align-items: center;
   gap: 28px;
 }
-.method-link {
+.method-link,
+.github-link {
   display: flex;
   align-items: center;
   gap: 7px;
@@ -154,8 +155,14 @@ button {
   text-decoration: none;
   color: var(--muted);
 }
-.method-link:hover {
+.method-link:hover,
+.github-link:hover {
   color: var(--text);
+}
+.github-link {
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
 }
 .button {
   display: inline-flex;
@@ -946,7 +953,8 @@ td span {
   .header-actions {
     gap: 14px;
   }
-  .method-link {
+  .method-link,
+  .github-link {
     font-size: 12px;
     gap: 5px;
   }
@@ -1050,12 +1058,17 @@ td span {
     font-size: 18px;
     letter-spacing: -0.5px;
     gap: 6px;
+    white-space: normal;
   }
   .brand > svg {
     display: none;
   }
   .method-link {
     display: none;
+  }
+  .header-actions {
+    flex-shrink: 0;
+    gap: 8px;
   }
   .button.outline {
     font-size: 12px;
