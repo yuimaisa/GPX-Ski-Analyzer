@@ -18,6 +18,7 @@ import { RunTable } from './RunTable';
 import { QualityPanel } from './QualityPanel';
 import { clock, day, number, STATE_LABELS, STATE_COLORS } from '../lib/presentation';
 import type { Analysis } from '../types/analysis';
+const repositoryUrl = 'https://github.com/yuimaisa/GPX-Ski-Analyzer';
 const TrackMap = dynamic(() => import('./TrackMap'), {
   ssr: false,
   loading: () => (
@@ -166,6 +167,9 @@ export function Analyzer() {
                 解析方法
               </a>
             )}
+            <a className="github-link" href={repositoryUrl} target="_blank" rel="noreferrer">
+              GitHub
+            </a>
             <button className="button outline" onClick={choose} disabled={busy}>
               <FolderOpen size={18} />
               <span>GPXを選択</span>
@@ -212,8 +216,8 @@ export function Analyzer() {
         )}
       </main>
       <footer className="app-footer">
-        <a href="https://github.com/yuimaisa/GPX-Ski-Analyzer" target="_blank" rel="noreferrer">
-          ソースコード · MIT
+        <a href={`${repositoryUrl}/blob/main/LICENSE`} target="_blank" rel="noreferrer">
+          MITライセンス
         </a>
       </footer>
       {dragging && (
