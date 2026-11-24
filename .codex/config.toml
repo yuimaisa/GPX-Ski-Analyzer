@@ -1,0 +1,24 @@
+# Project-level Codex CLI configuration for GPX-Ski-Analyzer
+# Loaded only when this repository is marked as Trusted in Codex CLI.
+# Shared instructions: AGENTS.md | Shared skills: .agents/skills/
+# Keep personal settings (model selection, API keys, etc.) in ~/.codex/config.toml.
+
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+project_doc_fallback_filenames = ["GEMINI.md"]
+
+[sandbox_workspace_write]
+network_access = false
+
+# Up-to-date docs for Next.js 16, React 19, Tailwind CSS v4, Leaflet, Recharts 3, Vitest 4
+[mcp_servers.context7]
+url = "https://mcp.context7.com/mcp"
+
+# Official Cloudflare docs (Workers Static Assets, Wrangler, branch preview deployments)
+[mcp_servers.cloudflare_docs]
+url = "https://docs.mcp.cloudflare.com/mcp"
+
+# Headless browser automation for responsive (320/390/768/1440px) and light-mode UI QA
+[mcp_servers.playwright]
+command = "npx"
+args = ["-y", "@playwright/mcp@latest", "--headless"]
