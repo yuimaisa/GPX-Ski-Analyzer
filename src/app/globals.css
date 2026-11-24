@@ -582,6 +582,9 @@ button {
   height: 3px;
   border-radius: 2px;
 }
+.map-legend i.legend-dashed {
+  background: repeating-linear-gradient(90deg, #94a3b8 0 5px, transparent 5px 9px);
+}
 .map-legend .legend-unit {
   color: var(--muted);
 }

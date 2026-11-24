@@ -1,7 +1,16 @@
-import { Clock3, TrendingUp, Pause, Mountain, MoveUpRight, Timer } from 'lucide-react';
+import {
+  ArrowUpRight,
+  Clock3,
+  TrendingUp,
+  Pause,
+  Mountain,
+  MoveUpRight,
+  Timer,
+} from 'lucide-react';
 import type { Analysis } from '../types/analysis';
 import { km, number, duration } from '../lib/presentation';
-export function Stats({ analysis: { stats: s, runs } }: { analysis: Analysis }) {
+export function Stats({ analysis: { stats: s, runs, lifts } }: { analysis: Analysis }) {
+  const gapLifts = lifts.filter((l) => l.inferredFromGap).length;
   const metrics = [
     { label: '滑走距離', value: km(s.skiDistance), unit: 'km' },
     { label: '滑走本数', value: number(runs.length), unit: '本' },
@@ -22,6 +31,21 @@ export function Stats({ analysis: { stats: s, runs } }: { analysis: Analysis }) 
         ))}
       </section>
       <dl className="secondary-stats">
+        <div
+          title={
+            gapLifts > 0
+              ? `有意な上昇区間から推定（うちGPS欠損区間からの推定 ${gapLifts}回・距離速度非加算、徒歩登坂とは区別しません）`
+              : '有意な上昇区間から推定（徒歩登坂とは区別しません）'
+          }
+        >
+          <dt>
+            <ArrowUpRight />
+            リフト回数（推定）
+          </dt>
+          <dd>
+            {number(s.liftCount)} <span>回</span>
+          </dd>
+        </div>
         <div>
           <dt>
             <Clock3 />

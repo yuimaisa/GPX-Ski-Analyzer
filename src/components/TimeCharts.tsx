@@ -12,7 +12,7 @@ import {
   YAxis,
 } from 'recharts';
 import { Gauge, Mountain } from 'lucide-react';
-import type { Analysis, SkiState } from '../types/analysis';
+import type { Analysis, Edge, SkiState } from '../types/analysis';
 import { STATE_COLORS, STATE_LABELS, clock, duration, number } from '../lib/presentation';
 interface Props {
   analysis: Analysis;
@@ -27,67 +27,124 @@ export interface ChartRow {
   speed: number | null;
   elevation: number | null;
   state: SkiState;
-  [key: string]: number | string | null;
+  runId: number | null;
+  liftId: number | null;
+  inferredLift: boolean;
+  [key: string]: number | string | boolean | null;
 }
+const states = Object.keys(STATE_COLORS) as SkiState[];
+const elevationSeries = ['gap', ...states];
+
+function edgeSeries(edge: Edge | undefined) {
+  return edge?.connected ? edge.state : edge ? 'gap' : null;
+}
+
 export function createChartRows(a: Analysis): ChartRow[] {
   const rows: ChartRow[] = [];
-  const stride = Math.max(1, Math.ceil(a.edges.length / 1400));
-  const boundaries = new Set(a.runs.flatMap((r) => [r.from, r.to]));
-  let lastTime = -Infinity;
-  const first = a.points.find((p) => p.accepted && p.elapsed != null);
-  if (first?.elapsed != null) {
-    const state = a.edges.find((e) => e.from === first.index)?.state ?? 'unknown';
-    const row: ChartRow = {
-      elapsed: first.elapsed,
-      index: first.index,
-      time: first.time,
-      speed: null,
-      elevation: first.smoothedElevation,
-      state,
-    };
-    for (const s of Object.keys(STATE_COLORS)) {
-      row[`speed_${s}`] = null;
-      row[`elevation_${s}`] = s === state ? row.elevation : null;
-    }
-    rows.push(row);
-    lastTime = first.elapsed;
+  const stride = Math.max(1, Math.ceil(a.edges.length / 1600));
+  const boundaries = new Set([
+    ...a.runs.flatMap((r) => [r.from, r.to]),
+    ...a.lifts.flatMap((l) => [l.from, l.to]),
+  ]);
+  const inferredLiftIds = new Set(a.lifts.filter((l) => l.inferredFromGap).map((l) => l.id));
+  const vertices: { index: number; incoming?: Edge }[] = [];
+  let lastElapsed = -Infinity;
+  for (const p of a.points) {
+    if (!p.accepted || p.elapsed == null || p.elapsed <= lastElapsed) continue;
+    vertices.push({ index: p.index });
+    lastElapsed = p.elapsed;
   }
-  for (let i = 0; i < a.edges.length; i++) {
-    const e = a.edges[i],
-      p = a.points[e.to],
-      prev = a.points[e.from];
-    if (p.elapsed == null || p.elapsed <= lastTime) continue;
-    if (!e.connected && prev.elapsed != null && p.elapsed > prev.elapsed)
-      rows.push({
-        elapsed: (prev.elapsed + p.elapsed) / 2,
-        index: e.to,
-        time: null,
-        speed: null,
-        elevation: null,
-        state: 'unknown',
-      });
-    const important =
-      i % stride === 0 ||
-      i === a.edges.length - 1 ||
-      boundaries.has(e.to) ||
-      boundaries.has(e.from) ||
-      e.state !== a.edges[i - 1]?.state ||
-      !e.connected;
-    if (!important) continue;
+  let edgeIndex = 0;
+  for (let i = 1; i < vertices.length; i++) {
+    const vertex = vertices[i];
+    while (edgeIndex < a.edges.length && a.edges[edgeIndex].to < vertex.index) edgeIndex++;
+    const edge = a.edges[edgeIndex];
+    if (edge?.from === vertices[i - 1].index && edge.to === vertex.index) vertex.incoming = edge;
+  }
+
+  for (let i = 0; i < vertices.length; i++) {
+    const { index, incoming } = vertices[i];
+    const outgoing = vertices[i + 1]?.incoming;
+    const p = a.points[index];
+    const prev = vertices[i - 1] ? a.points[vertices[i - 1].index] : undefined;
+    const next = vertices[i + 1] ? a.points[vertices[i + 1].index] : undefined;
+    const prevEle = prev?.smoothedElevation;
+    const curEle = p.smoothedElevation;
+    const nextEle = next?.smoothedElevation;
+    const isExtremum =
+      prevEle != null &&
+      curEle != null &&
+      nextEle != null &&
+      ((curEle > prevEle && curEle >= nextEle) || (curEle < prevEle && curEle <= nextEle));
+    const inSeries = edgeSeries(incoming);
+    const outSeries = edgeSeries(outgoing);
+    if (
+      i % stride !== 0 &&
+      i !== vertices.length - 1 &&
+      !boundaries.has(index) &&
+      inSeries === outSeries &&
+      inSeries != null &&
+      inSeries !== 'gap' &&
+      incoming?.speed != null &&
+      outgoing?.speed != null &&
+      (curEle != null || (prevEle == null && nextEle == null)) &&
+      !isExtremum
+    )
+      continue;
+
+    const edge = incoming ?? outgoing;
+    const speed = incoming?.speed != null ? incoming.speed * 3.6 : null;
     const row: ChartRow = {
-      elapsed: p.elapsed,
-      index: p.index,
+      elapsed: p.elapsed!,
+      index,
       time: p.time,
-      speed: e.speed == null ? null : e.speed * 3.6,
-      elevation: e.connected && e.seconds != null ? p.smoothedElevation : null,
-      state: e.state,
+      speed,
+      elevation: curEle,
+      elevation_gap: inSeries === 'gap' || outSeries === 'gap' ? curEle : null,
+      state: edge?.state ?? 'unknown',
+      runId: edge?.runId ?? null,
+      liftId: edge?.liftId ?? null,
+      inferredLift: edge?.liftId != null && inferredLiftIds.has(edge.liftId),
     };
-    for (const s of Object.keys(STATE_COLORS)) {
-      row[`speed_${s}`] = s === e.state ? row.speed : null;
-      row[`elevation_${s}`] = s === e.state ? row.elevation : null;
+    for (const state of states) {
+      row[`elevation_${state}`] = state === inSeries || state === outSeries ? curEle : null;
+      row[`speed_${state}`] =
+        state === inSeries || (state === outSeries && outgoing?.speed != null) ? speed : null;
+    }
+
+    const prevRow = rows[rows.length - 1];
+    if (prevRow) {
+      // A shared vertex can belong to two series. Break any series that would
+      // otherwise draw an edge between two shared vertices in the wrong state.
+      const breakSeries = elevationSeries.some(
+        (series) =>
+          series !== inSeries &&
+          ((prevRow[`elevation_${series}`] != null && row[`elevation_${series}`] != null) ||
+            (prevRow[`speed_${series}`] != null && row[`speed_${series}`] != null)),
+      );
+      if (inSeries == null || inSeries === 'gap' || breakSeries) {
+        const marker: ChartRow = {
+          ...row,
+          elapsed: (prevRow.elapsed + row.elapsed) / 2,
+          time: null,
+          speed: null,
+          elevation: null,
+        };
+        for (const kind of ['elevation', 'speed']) {
+          for (const series of elevationSeries) {
+            const key = `${kind}_${series}`;
+            const start = prevRow[key];
+            const end = row[key];
+            marker[key] =
+              series === inSeries && typeof start === 'number' && typeof end === 'number'
+                ? (start + end) / 2
+                : null;
+          }
+        }
+        rows.push(marker);
+      }
     }
     rows.push(row);
-    lastTime = p.elapsed;
   }
   return rows;
 }
@@ -99,6 +156,12 @@ function ChartTooltip({
   payload?: readonly { payload?: ChartRow }[];
 }) {
   const row = payload?.find((p) => p.payload?.time != null)?.payload;
+  const tag =
+    row?.runId != null
+      ? `滑走 ${String(row.runId).padStart(2, '0')}本目`
+      : row?.liftId != null
+        ? `リフト ${String(row.liftId).padStart(2, '0')}回目${row.inferredLift ? '（欠損推定）' : '（推定）'}`
+        : null;
   return active && row ? (
     <div className="chart-tooltip">
       <strong>
@@ -106,9 +169,10 @@ function ChartTooltip({
       </strong>
       <p>
         {duration(row.elapsed)} · {STATE_LABELS[row.state]}
+        {tag ? ` · ${tag}` : ''}
       </p>
       <p>
-        {number(row.speed, 1)} km/h <span>/</span> {number(row.elevation)} m
+        {number(row.elevation)} m <span>/</span> {number(row.speed, 1)} km/h
       </p>
     </div>
   ) : null;
@@ -119,21 +183,35 @@ export function TimeCharts({ analysis: a, selectedRun, selectedPoint, onPoint }:
   const from = selected ? a.points[selected.from].elapsed : null,
     to = selected ? a.points[selected.to].elapsed : null;
   const cursor = selectedPoint == null ? null : a.points[selectedPoint].elapsed;
+  const liftBands = useMemo(
+    () =>
+      a.lifts
+        .map((l) => ({
+          id: l.id,
+          x1: a.points[l.from].elapsed,
+          x2: a.points[l.to].elapsed,
+          inferred: l.inferredFromGap,
+        }))
+        .filter((b): b is { id: number; x1: number; x2: number; inferred: boolean } =>
+          Boolean(b.x1 != null && b.x2 != null && b.x2 > b.x1),
+        ),
+    [a],
+  );
   return (
     <div className="charts-stack">
-      {(['speed', 'elevation'] as const).map((kind) => (
+      {(['elevation', 'speed'] as const).map((kind) => (
         <section
           className="panel chart-panel"
           key={kind}
-          aria-label={kind === 'speed' ? '速度の時系列グラフ' : '標高の時系列グラフ'}
+          aria-label={kind === 'elevation' ? '時間と標高の時系列グラフ' : '速度の時系列グラフ'}
         >
           <div className="panel-heading">
             <h2>
-              {kind === 'speed' ? <Gauge /> : <Mountain />}
-              {kind === 'speed' ? '速度' : '標高'}
+              {kind === 'elevation' ? <Mountain /> : <Gauge />}
+              {kind === 'elevation' ? '標高（時間×標高）' : '速度'}
             </h2>
             <span className="chart-unit">
-              {kind === 'speed' ? 'km/h' : 'm'} <span className="muted">/ 経過時間（分）</span>
+              {kind === 'elevation' ? 'm' : 'km/h'} <span className="muted">/ 経過時間（分）</span>
             </span>
           </div>
           {rows.length > 0 ? (
@@ -182,14 +260,27 @@ export function TimeCharts({ analysis: a, selectedRun, selectedPoint, onPoint }:
                     axisLine={false}
                     width={49}
                   />
+                  {kind === 'elevation' &&
+                    liftBands.map((band) => (
+                      <ReferenceArea
+                        key={band.id}
+                        x1={band.x1}
+                        x2={band.x2}
+                        fill={STATE_COLORS.uphill}
+                        fillOpacity={band.inferred ? 0.04 : 0.06}
+                        stroke={band.inferred ? STATE_COLORS.uphill : 'none'}
+                        strokeDasharray={band.inferred ? '3 3' : undefined}
+                        strokeOpacity={0.28}
+                      />
+                    ))}
                   {from != null && to != null && (
                     <ReferenceArea
                       x1={from}
                       x2={to}
                       fill={STATE_COLORS.downhill}
-                      fillOpacity={0.09}
+                      fillOpacity={0.1}
                       stroke={STATE_COLORS.downhill}
-                      strokeOpacity={0.3}
+                      strokeOpacity={0.35}
                     />
                   )}
                   {cursor != null && (
@@ -199,18 +290,21 @@ export function TimeCharts({ analysis: a, selectedRun, selectedPoint, onPoint }:
                     content={<ChartTooltip />}
                     cursor={{ stroke: 'var(--muted)', strokeDasharray: '3 3' }}
                   />
-                  <Line
-                    type="linear"
-                    dataKey={kind}
-                    stroke={kind === 'speed' ? STATE_COLORS.downhill : STATE_COLORS.uphill}
-                    strokeOpacity={0.3}
-                    strokeWidth={1}
-                    dot={false}
-                    activeDot={false}
-                    isAnimationActive={false}
-                    connectNulls={false}
-                  />
-                  {(Object.keys(STATE_COLORS) as SkiState[]).map((state) => (
+                  {kind === 'elevation' && (
+                    <Line
+                      type="linear"
+                      dataKey="elevation_gap"
+                      stroke="#94a3b8"
+                      strokeOpacity={0.75}
+                      strokeWidth={1.5}
+                      strokeDasharray="4 5"
+                      dot={false}
+                      activeDot={false}
+                      isAnimationActive={false}
+                      connectNulls={false}
+                    />
+                  )}
+                  {states.map((state) => (
                     <Line
                       key={state}
                       type="linear"

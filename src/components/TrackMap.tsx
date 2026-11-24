@@ -70,17 +70,27 @@ export default function TrackMap({ analysis, selectedRun, selectedPoint, onPoint
   const [fit, setFit] = useState(0);
   const [tileError, setTileError] = useState(false);
   const renderer = useMemo(() => L.canvas({ padding: 0.5 }), []);
+  const hasGapEdges = useMemo(() => analysis.edges.some((e) => !e.connected), [analysis]);
   const lines = useMemo(() => {
     const result: {
       key: string;
       color: string;
       positions: LatLngTuple[];
-      dashed: boolean;
+      gap: boolean;
       muted: boolean;
     }[] = [];
     let previousTo = -1;
     for (const e of analysis.edges) {
+      const fromPt = analysis.points[e.from];
+      const toPt = analysis.points[e.to];
       if (!e.connected) {
+        result.push({
+          key: `gap-${e.from}-${e.to}`,
+          color: '#94a3b8',
+          positions: [position(fromPt), position(toPt)],
+          gap: true,
+          muted: selectedRun != null,
+        });
         previousTo = -1;
         continue;
       }
@@ -92,25 +102,25 @@ export default function TrackMap({ analysis, selectedRun, selectedPoint, onPoint
             ? STATE_COLORS.unknown
             : SPEED_COLORS[bin];
       const muted = selectedRun != null && e.runId !== selectedRun;
-      const key = `${e.block}-${color}-${muted}-${e.state === 'unknown'}`;
+      const key = `${e.block}-${color}-${muted}`;
       let line = result[result.length - 1];
-      if (!line || line.key !== key || previousTo !== e.from) {
+      if (!line || line.gap || line.key !== key || previousTo !== e.from) {
         line = {
           key,
           color,
-          positions: [position(analysis.points[e.from])],
-          dashed: e.state === 'unknown',
+          positions: [position(fromPt)],
+          gap: false,
           muted,
         };
         result.push(line);
       }
-      line.positions.push(position(analysis.points[e.to]));
+      line.positions.push(position(toPt));
       previousTo = e.to;
     }
-    // Canvas + batched paths: no React component per GPS point. Thin long paths before drawing.
+    // Canvas + batched paths: keep straight vertex-to-vertex lines, thinning only extremely long paths.
     for (const line of result) {
-      if (line.positions.length > 1200) {
-        const stride = Math.ceil(line.positions.length / 1200);
+      if (line.positions.length > 2400) {
+        const stride = Math.ceil(line.positions.length / 2400);
         line.positions = line.positions.filter(
           (_, i) => i % stride === 0 || i === line.positions.length - 1,
         );
@@ -169,12 +179,12 @@ export default function TrackMap({ analysis, selectedRun, selectedPoint, onPoint
               positions={line.positions}
               pathOptions={{
                 color: line.color,
-                weight: line.muted ? 2 : 4,
-                opacity: line.muted ? 0.24 : 0.95,
-                dashArray: line.dashed ? '5 7' : undefined,
+                weight: line.gap ? 2 : line.muted ? 2 : 4,
+                opacity: line.gap ? (line.muted ? 0.2 : 0.65) : line.muted ? 0.24 : 0.95,
+                dashArray: line.gap ? '5 7' : undefined,
                 lineCap: 'round',
               }}
-              smoothFactor={1.2}
+              smoothFactor={0}
             />
           ))}
           {first && (
@@ -228,12 +238,20 @@ export default function TrackMap({ analysis, selectedRun, selectedPoint, onPoint
       </div>
       <div className="map-legend" aria-label={mode === 'state' ? '状態の凡例' : '速度の凡例'}>
         {mode === 'state' ? (
-          Object.entries(STATE_COLORS).map(([state, color]) => (
-            <span key={state}>
-              <i style={{ background: color }} />
-              {STATE_LABELS[state as keyof typeof STATE_LABELS]}
-            </span>
-          ))
+          <>
+            {Object.entries(STATE_COLORS).map(([state, color]) => (
+              <span key={state}>
+                <i style={{ background: color }} />
+                {STATE_LABELS[state as keyof typeof STATE_LABELS]}
+              </span>
+            ))}
+            {hasGapEdges && (
+              <span>
+                <i className="legend-dashed" />
+                GPS欠損・非接続
+              </span>
+            )}
+          </>
         ) : (
           <>
             <span className="legend-unit">km/h</span>
@@ -243,6 +261,12 @@ export default function TrackMap({ analysis, selectedRun, selectedPoint, onPoint
                 {i === 5 ? '75+' : `${i * 15}–${i * 15 + 15}`}
               </span>
             ))}
+            {hasGapEdges && (
+              <span>
+                <i className="legend-dashed" />
+                GPS欠損・非接続
+              </span>
+            )}
           </>
         )}
       </div>

@@ -29,6 +29,8 @@ it('runs the bundled browser worker without TypeScript or unresolved imports', a
     },
   });
   expect(message.result?.runs).toHaveLength(4);
+  expect(message.result?.lifts).toHaveLength(3);
+  expect(message.result?.stats.liftCount).toBe(3);
   expect(message.error).toBeUndefined();
   self.onmessage!({ data: { xml: '<gpx/>', filename: 'empty.gpx' } });
   expect(message.error).toContain('2つ以上');

@@ -30,6 +30,7 @@ export interface Edge {
   ascent: number;
   descent: number;
   runId: number | null;
+  liftId: number | null;
   connected: boolean;
 }
 export interface SkiRun {
@@ -45,11 +46,24 @@ export interface SkiRun {
   averageSpeed: number;
   maxSpeed: number;
 }
+export interface LiftRide {
+  id: number;
+  from: number;
+  to: number;
+  start: number | null;
+  end: number | null;
+  duration: number;
+  elapsed: number;
+  distance: number;
+  ascent: number;
+  inferredFromGap: boolean;
+}
 export interface Analysis {
   track: GpxTrack;
   points: AnalyzedPoint[];
   edges: Edge[];
   runs: SkiRun[];
+  lifts: LiftRide[];
   stats: {
     distance: number;
     skiDistance: number;
@@ -57,6 +71,7 @@ export interface Analysis {
     uphillSeconds: number;
     stoppedSeconds: number;
     unknownSeconds: number;
+    liftCount: number;
     ascent: number | null;
     descent: number | null;
     maxSpeed: number | null;
