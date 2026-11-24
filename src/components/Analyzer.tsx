@@ -97,6 +97,13 @@ function AnalysisView({
               </span>
               <span>{number(edge?.speed == null ? null : edge.speed * 3.6, 1)} km/h</span>
               <span>{number(point.smoothedElevation)} m</span>
+              {edge?.runId != null && <span>滑走 {String(edge.runId).padStart(2, '0')}本目</span>}
+              {edge?.runId == null && edge?.liftId != null && (
+                <span>
+                  リフト {String(edge.liftId).padStart(2, '0')}回目
+                  {edge.connected ? '（推定）' : '（欠損推定）'}
+                </span>
+              )}
             </>
           )}
           <span className="inspector-help">地図・グラフで地点を選択</span>
